@@ -1,0 +1,25 @@
+{
+  "name": "sportz",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "dev": "node --watch src/server.js",
+    "start": "node src/server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Sreenu-y/sportz.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "module",
+  "bugs": {
+    "url": "https://github.com/Sreenu-y/sportz/issues"
+  },
+  "homepage": "https://github.com/Sreenu-y/sportz#readme",
+  "dependencies": {
+    "express": "^5.2.1"
+  }
+}
