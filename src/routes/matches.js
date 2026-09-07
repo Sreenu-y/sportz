@@ -38,7 +38,9 @@ matchRouter.post("/", async (req, res) => {
   const parsed = createMatchSchema.safeParse(req.body);
 
   if (!parsed.success) {
-    return res.status(400).json(parsed.error.issues);
+    return res
+      .status(400)
+      .json({ message: "Validation Error", error: parsed.error.issues });
   }
 
   const {
@@ -57,6 +59,10 @@ matchRouter.post("/", async (req, res) => {
         status: getMatchStatus(startTime, endTime),
       })
       .returning();
+
+    if (res.app.locals.broadcastMatchCreated) {
+      res.app.locals.broadcastMatchCreated(event);
+    }
 
     return res.status(201).json({ data: event });
   } catch (error) {
