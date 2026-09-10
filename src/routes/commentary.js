@@ -16,9 +16,7 @@ const MAX_LIMIT = 100;
  * GET route to list commentary entries for a match.
  * Validates matchId in req.params and limit in req.query.
  */
-commentaryRouter.get(
-  ["/", "/matches/:id/commentary", "/:id/commentary"],
-  async (req, res) => {
+commentaryRouter.get("/", async (req, res) => {
     try {
       const paramParsed = matchIdParamSchema.safeParse(req.params);
       if (!paramParsed.success) {
@@ -60,9 +58,7 @@ commentaryRouter.get(
  * POST route to create a commentary entry for a match.
  * Validates matchId in req.params and payload in req.body.
  */
-commentaryRouter.post(
-  ["/", "/matches/:id/commentary", "/:id/commentary", "/:id"],
-  async (req, res) => {
+commentaryRouter.post("/", async (req, res) => {
     try {
       const paramParsed = matchIdParamSchema.safeParse(req.params);
       if (!paramParsed.success) {
