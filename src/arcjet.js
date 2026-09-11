@@ -41,6 +41,9 @@ export function securityMiddleware() {
     if (!httpArcjet) return next();
 
     try {
+      if (!req.headers["user-agent"]) {
+        req.headers["user-agent"] = "unknown";
+      }
       const decision = await httpArcjet.protect(req);
 
       if (decision.isDenied()) {
