@@ -14,12 +14,9 @@ const HOST = process.env.HOST || "0.0.0.0";
 const app = express();
 const server = http.createServer(app);
 
-app.get("/", (_, res) => {
-  res.send("Hello World!");
-});
-
-app.use(securityMiddleware());
 app.use(express.json());
+app.use(express.static("public"));
+app.use(securityMiddleware());
 
 app.use("/matches", matchRouter);
 app.use("/matches/:id/commentary", commentaryRouter);
