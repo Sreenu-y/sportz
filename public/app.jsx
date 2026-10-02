@@ -66,7 +66,10 @@ function App() {
 
   // WebSocket Channel Subscriptions
   const subscribeToMatchWS = useCallback((matchId) => {
-    if (!socketRef.current || socketRef.current.readyState !== WebSocket.OPEN) return;
+    if (!socketRef.current || socketRef.current.readyState !== WebSocket.OPEN) {
+      subscribedMatchIdRef.current = matchId;
+      return;
+    }
     
     if (subscribedMatchIdRef.current && subscribedMatchIdRef.current !== matchId) {
       socketRef.current.send(JSON.stringify({ type: 'unsubscribe', matchId: subscribedMatchIdRef.current }));
@@ -77,11 +80,11 @@ function App() {
   }, []);
 
   const unsubscribeFromMatchWS = useCallback((matchId) => {
+    subscribedMatchIdRef.current = null;
     if (!socketRef.current || socketRef.current.readyState !== WebSocket.OPEN) return;
     if (matchId) {
       socketRef.current.send(JSON.stringify({ type: 'unsubscribe', matchId: matchId }));
     }
-    subscribedMatchIdRef.current = null;
   }, []);
 
   // Initialize WebSocket connection
@@ -92,7 +95,11 @@ function App() {
     const host = window.location.host || 'localhost:8080';
     const wsUrl = `${protocol}//${host}/ws`;
 
+    let disposed = false;
+    let reconnectTimer = null;
+
     function connect() {
+      if (disposed) return;
       setWsStatus('connecting');
       setTickerMessage('Connecting to Sportz Real-Time Engine...');
 
@@ -100,6 +107,7 @@ function App() {
       socketRef.current = socket;
 
       socket.onopen = () => {
+        if (disposed) return;
         setWsStatus('connected');
         setTickerMessage('Connected to Sportz Real-Time Engine via WebSocket');
 
@@ -109,6 +117,7 @@ function App() {
       };
 
       socket.onmessage = (event) => {
+        if (disposed) return;
         try {
           const msg = JSON.parse(event.data);
           if (!msg || !msg.type) return;
@@ -137,12 +146,14 @@ function App() {
       };
 
       socket.onclose = () => {
+        if (disposed) return;
         setWsStatus('offline');
         setTickerMessage('WebSocket connection closed. Retrying in 5s...');
-        setTimeout(connect, 5000);
+        reconnectTimer = setTimeout(connect, 5000);
       };
 
       socket.onerror = (err) => {
+        if (disposed) return;
         console.error('WS Error:', err);
         socket.close();
       };
@@ -151,8 +162,16 @@ function App() {
     connect();
 
     return () => {
-      if (socketRef.current) {
-        socketRef.current.close();
+      disposed = true;
+      clearTimeout(reconnectTimer);
+      const socket = socketRef.current;
+      if (socket) {
+        socket.onopen = null;
+        socket.onmessage = null;
+        socket.onclose = null;
+        socket.onerror = null;
+        socket.close();
+        socketRef.current = null;
       }
     };
   }, [fetchMatches, subscribeToMatchWS]);
